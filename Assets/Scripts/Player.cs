@@ -8,16 +8,39 @@ public class Player : NetworkBehaviour
 
     [Networked]
     private TickTimer delay { get; set; }
+    [Networked]
+    public bool spawnedProjectile { get; set; }
 
+    private ChangeDetector _changeDetector;
+    public Material _material;
     private NetworkCharacterController _cc;
     private Vector3 _forward;
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
 
     private void Awake()
     {
         _cc = GetComponent<NetworkCharacterController>();
         _forward = transform.forward;
+        _material = GetComponentInChildren<MeshRenderer>().material;
     }
 
+    public override void Render()
+    {
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(spawnedProjectile):
+                    _material.color = Color.white;
+                    break;
+            }
+        }
+    _material.color = Color.Lerp(_material.color, Color.blue, Time.deltaTime);
+    }
     public override void FixedUpdateNetwork()
     {
         if (GetInput(out NetworkInputData data))
@@ -44,6 +67,7 @@ public class Player : NetworkBehaviour
                             o.GetComponent<Ball>().Init();
                         }
                     );
+                    spawnedProjectile = !spawnedProjectile;
                 }
             }
         }

@@ -30,6 +30,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             );
             // Keep track of the player avatars for easy access
             _spawnedCharacters.Add(player, networkPlayerObject);
+            
         }
     }
 
